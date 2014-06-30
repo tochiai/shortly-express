@@ -41,6 +41,31 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
   }
 });
 
+db.knex.schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users', function (click) {
+      user.increments('id').primary();
+      user.string('username', 255);
+      user.integer('salt', 11);
+      user.string('hash', 255);
+      user.timestamps();
+    }).then(function (table) {
+      console.log('Created Table', table);
+    });
+  }
+});
+
+db.knex.schema.hasTable('sessions').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('sessions', function (click) {
+      session.increments('id').primary();
+      session.string('token', 255);
+      session.integer('expiration_date', 11);
+    }).then(function (table) {
+      console.log('Created Table', table);
+    });
+  }
+});
 /************************************************************/
 // Add additional schema definitions below
 /************************************************************/
