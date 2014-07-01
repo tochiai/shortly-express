@@ -1,6 +1,8 @@
 var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
+var bcrypt = require('bcrypt-nodejs');
+var cookieParser = require('cookie-parser');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -15,12 +17,15 @@ app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(partials());
-  app.use(express.bodyParser())
+  app.use(express.bodyParser());
+  app.use(express.cookieParser('joelcox'));
   app.use(express.static(__dirname + '/public'));
 });
 
+
+
 app.get('/', function(req, res) {
-  res.render('index');
+  res.render('login');
 });
 
 app.get('/create', function(req, res) {
@@ -76,37 +81,73 @@ app.get('/signup', function(req, res) {
 });
 
 app.get('/login', function(req, res) {
-  res.render('login');
+  if (util.hasToken(req)){
+    console.log('yes token');
+    console.log('they have token - route to index');
+    res.render('index');
+  } else {
+    console.log('no token');
+    res.render('login');
+  }
 });
 
 app.post('/signup', function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
-  //console.log('signup post', req.body);
-
-  // if (!util.isValidUrl(uri)) {
-  //   console.log('Not a valid url: ', uri);
-  //   return res.send(404);
-  // }
 
   new User({ username: username }).fetch().then(function(found) {
     if (found) {
       res.send(200, 'user already exists');
     } else {
+      //hash it up
+      var salt = bcrypt.genSaltSync(10);
+      var hash = bcrypt.hashSync(password, salt);
+
+
       var user = new User({
         username: username,
-        password: password
+
+        hash: hash
       });
 
       user.save().then(function(newUser) {
         console.log('saving user');
         Users.add(newUser);
         //TODO: route to the index
-        res.send(200, 'index');
+        res.render('index');
       });
     }
   });
 });
+
+app.post('/login', function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  console.log('login page hit');
+
+
+  new User({ username: username }).fetch().then(function(found) {
+    if (!found) {
+      res.render('signup');
+    } else {
+
+      var hash = found.get("hash");
+
+      var pCheck =  bcrypt.compareSync(password, hash); // true
+
+      if (pCheck){
+        console.log('setting new cookie');
+        res.cookie('session', '1',  { maxAge: 20000, signed: true });
+        res.render('index');
+      } else {
+        res.render('login');
+      }
+    }
+  });
+
+});
+
+
 
 
 /************************************************************/
