@@ -43,7 +43,7 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 
 db.knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
-    db.knex.schema.createTable('users', function (click) {
+    db.knex.schema.createTable('users', function (user) {
       user.increments('id').primary();
       user.string('username', 255);
       user.integer('salt', 11);
@@ -57,7 +57,7 @@ db.knex.schema.hasTable('users').then(function(exists) {
 
 db.knex.schema.hasTable('sessions').then(function(exists) {
   if (!exists) {
-    db.knex.schema.createTable('sessions', function (click) {
+    db.knex.schema.createTable('sessions', function (session) {
       session.increments('id').primary();
       session.string('token', 255);
       session.integer('expiration_date', 11);
