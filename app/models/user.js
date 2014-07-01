@@ -16,7 +16,7 @@ var User = db.Model.extend({
       var salt = bcrypt.genSaltSync(10);
       console.log('salt', salt);
       model.set('salt', salt);
-      var hash = bcrypt.hashSync(model.get('password'), 777);
+      var hash = bcrypt.hashSync(model.get('password'), salt);
       model.set('hash', hash);
       delete model.attributes.password;
       console.log(' model after delete', model);
