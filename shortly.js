@@ -24,18 +24,20 @@ app.configure(function() {
 
 
 
-app.get('/', function(req, res) {
-  res.render('login');
-});
-
-app.get('/create', function(req, res) {
+app.get('/', util.authenticate, function(req, res) {
   res.render('index');
 });
 
-app.get('/links', function(req, res) {
+app.get('/create', util.authenticate, function(req, res) {
+  console.log('create fired');
+    res.render('/create');
+
+  });
+
+app.get('/links', util.authenticate, function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
-  })
+  });
 });
 
 app.post('/links', function(req, res) {
@@ -77,18 +79,18 @@ app.post('/links', function(req, res) {
 /************************************************************/
 
 app.get('/signup', function(req, res) {
-  res.render('signup');
-});
-
-app.get('/login', function(req, res) {
   if (util.hasToken(req)){
     console.log('yes token');
     console.log('they have token - route to index');
     res.render('index');
   } else {
     console.log('no token');
-    res.render('login');
+    res.render('signup');
   }
+});
+
+app.get('/login', util.authenticate, function(req, res) {
+  res.render('index');
 });
 
 app.post('/signup', function(req, res) {
